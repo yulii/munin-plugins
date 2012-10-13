@@ -1,0 +1,37 @@
+#!/bin/sh
+# @author yulii
+# Count Processes by `ps` command
+
+ps_wc() {
+	ps alx | grep -v grep | grep $1 | wc -l
+}
+
+RESQUE_COUNT=`ps_wc "-E resque-[0-9.]+"`
+SCHEDULER_COUNT=`ps_wc "-E resque-scheduler-[0-9.]+"`
+
+case $1 in
+config)
+	cat <<EOF
+graph_title Resque Processes Count
+graph_category Resque
+graph_info This graph shows number of resque processes
+graph_args --base 1000 -l 0
+graph_scale no
+graph_vlabel processes
+processes_count.label resque-workers
+processes_count.draw AREA
+processes_count.colour 0000FF
+schedulers_count.label resque-schedulers
+schedulers_count.draw AREA
+schedulers_count.colour 00FF00
+EOF
+	exit 0
+	;;
+autoconf)
+	echo yes
+	exit 0
+	;;
+* )
+	echo "processes_count.value ${RESQUE_COUNT}"
+	echo "schedulers_count.value ${SCHEDULER_COUNT}"
+esac
